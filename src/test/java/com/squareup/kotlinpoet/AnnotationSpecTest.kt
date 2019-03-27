@@ -17,10 +17,11 @@ package com.squareup.kotlinpoet
 
 import com.google.common.truth.Truth.assertThat
 import com.google.testing.compile.CompilationRule
+import com.squareup.kotlinpoet.bug.MyClass
 import org.junit.Rule
-import kotlin.test.Test
 import java.lang.annotation.Inherited
 import kotlin.reflect.KClass
+import kotlin.test.Test
 
 class AnnotationSpecTest {
 
@@ -76,6 +77,28 @@ class AnnotationSpecTest {
   inner class IsAnnotated
 
   @Rule @JvmField val compilation = CompilationRule()
+
+    @Test fun bug() {
+        val myClazz = compilation.elements.getTypeElement(MyClass::class.java.canonicalName)
+        val classBuilder = TypeSpec.classBuilder("Result")
+
+        myClazz.annotationMirrors.map { AnnotationSpec.get(it) }
+            .forEach {
+                classBuilder.addAnnotation(it)
+            }
+
+        // See the fix in AnnotationSpec#visitArray
+        assertThat(toString(classBuilder.build())).isEqualTo("""
+            |package com.squareup.tacos
+            |
+            |import java.lang.Boolean
+            |import java.lang.Object
+            |import javax.xml.bind.annotation.XmlSeeAlso
+            |
+            |@XmlSeeAlso(value = [Object::class, Boolean::class])
+            |class Result
+            |""".trimMargin())
+    }
 
   @Test fun equalsAndHashCode() {
     var a = AnnotationSpec.builder(AnnotationC::class.java).build()
