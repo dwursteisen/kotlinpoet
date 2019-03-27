@@ -162,9 +162,9 @@ class AnnotationSpec private constructor(
 
     override fun visitArray(values: List<AnnotationValue>, name: String): CodeBlock.Builder {
       // FIXME: Uncomment to fix the issue.
-      if(name == "value") {
-          builder.add("value = ")
-      }
+      // if(name == "value") {
+      //    builder.add("value = ")
+      // }
 
       builder.add("[⇥⇥")
       values.forEachIndexed { index, value ->
